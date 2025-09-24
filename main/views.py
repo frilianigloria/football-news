@@ -21,9 +21,9 @@ def show_main(request):
         news_list = News.objects.filter(user=request.user)
 
     context = {
-        'npm': '240123456',
+        'npm': '2406358900',
         'name': request.user.username,
-        'class': 'PBP A',
+        'class': 'PBP B',
         'news_list': news_list,
         'last_login': request.COOKIES.get('last_login', 'Never')
     }
@@ -98,11 +98,11 @@ def login_user(request):
       form = AuthenticationForm(data=request.POST)
 
       if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            response = HttpResponseRedirect(reverse("main:show_main"))
-            response.set_cookie('last_login', str(datetime.datetime.now()))
-            return response
+        user = form.get_user()
+        login(request, user)
+        response = HttpResponseRedirect(reverse("main:show_main"))
+        response.set_cookie('last_login', str(datetime.datetime.now()))
+        return response
 
    else:
       form = AuthenticationForm(request)
@@ -114,3 +114,21 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+def edit_news(request, id):
+    news = get_object_or_404(News, pk=id)
+    form = NewsForm(request.POST or None, instance=news)
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_news.html", context)
+
+def delete_news(request, id):
+    news = get_object_or_404(News, pk=id)
+    news.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
